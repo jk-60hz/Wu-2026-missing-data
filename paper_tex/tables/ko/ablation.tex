@@ -1,0 +1,14 @@
+\begin{tabular}{llrr}
+\toprule
+변형 & 설명 & RMSE (\%cap) & 시간 (s) \\
+\midrule
+FPRM & GPR, forward, 최적 단일 참조 & 8.67 & 6.92 \\
+FPRM-SVR & SVR 매핑(논문 SVM$^*$) & 8.73 & \textbf{0.15} \\
+FPRM-MLP & MLP 매핑(논문 NN$^*$) & 8.76 & 2.01 \\
+FPRM-back & 과거 방향(인과) 임베딩$^\dagger$ & \textbf{8.60} & 6.68 \\
+FPRM-csi & clear-sky index 공간$^\dagger$ & 8.92 & 6.30 \\
+FPRM-E1 & 임베딩 제거($E{=}1$) & 9.26 & 1.91 \\
+FPRM-E1-csi & 임베딩 제거 + clear-sky index & 9.67 & 1.79 \\
+FPRM-ref & 지정 참조 고정(Maui: GHI) & 12.31 & 6.79 \\
+\bottomrule
+\end{tabular}

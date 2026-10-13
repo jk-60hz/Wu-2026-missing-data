@@ -1,0 +1,27 @@
+% FPRM pipeline schematic (shared by en/ko; labels passed via macros \PLa ... \PLh)
+\begin{tikzpicture}[
+  font=\footnotesize, >=Stealth,
+  box/.style={draw=black!60, rounded corners=2pt, fill=#1, align=center, minimum height=1.05cm, inner sep=3pt},
+  box/.default=white]
+  \definecolor{cblue}{HTML}{2a78d6}\definecolor{corange}{HTML}{eb6834}\definecolor{cgray}{HTML}{f0efec}
+  % reference series
+  \node[box=cblue!8, text width=2.6cm] (ref) at (0,0) {\PLa\\[2pt]
+    \begin{tikzpicture}[x=0.22cm,y=0.22cm]\draw[cblue,thick] plot[smooth] coordinates {(0,0)(1,1.4)(2,2.1)(3,1.5)(4,0.3)(5,0)(6,1.2)(7,2.2)(8,1.6)(9,0.2)};\end{tikzpicture}};
+  % incomplete series
+  \node[box=corange!8, text width=2.6cm] (tgt) at (0,-2.3) {\PLb\\[2pt]
+    \begin{tikzpicture}[x=0.22cm,y=0.22cm]\draw[corange,thick] plot[smooth] coordinates {(0,0)(1,1.2)(2,1.9)}; \draw[corange,thick,dashed,opacity=.45] plot[smooth] coordinates {(2,1.9)(3,1.4)(4,0.3)(5,0)(6,1.0)}; \draw[corange,thick] plot[smooth] coordinates {(6,1.0)(7,2.0)(8,1.4)(9,0.2)};\end{tikzpicture}};
+  % full reconstruction
+  \node[box, text width=3.6cm] (full) at (5.1,0) {\PLc\\[1pt] $\mathbf{X}_i(t)=\big(x_i(t),\,x_i(t{+}\tau),$\\ $\dots,\,x_i(t{+}(E{-}1)\tau)\big)$};
+  % training pairs
+  \node[box=cgray, text width=3.6cm] (pairs) at (5.1,-2.3) {\PLd\\[1pt] $\{(\mathbf{X}_i(t),x_j(t)) : x_j(t)\ \text{observed}\}$};
+  % mapping
+  \node[box=cblue!8, text width=2.9cm] (map) at (9.4,-1.15) {\PLe\\[1pt] $x_j(t)=F(\mathbf{X}_i(t))$\\ GPR / SVR / MLP};
+  % output
+  \node[box=corange!8, text width=2.5cm] (out) at (14.1,-1.15) {\PLf\\[1pt] $\hat x_j(k)=F(\mathbf{X}_i(k))$};
+  \draw[->,thick,black!60] (ref) -- node[above,font=\scriptsize]{\PLg} (full);
+  \draw[->,thick,black!60] (full) -- (pairs);
+  \draw[->,thick,black!60] (tgt) -- (pairs);
+  \draw[->,thick,black!60] (pairs.east) -- (map.south west);
+  \draw[->,thick,black!60] (full.east) -- (map.north west);
+  \draw[->,thick,black!60] (map) -- node[above,font=\scriptsize]{\PLh} (out);
+\end{tikzpicture}

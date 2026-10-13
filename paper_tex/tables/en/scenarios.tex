@@ -1,0 +1,14 @@
+\begin{tabular}{lllll}
+\toprule
+ID & Scenario & Parameters & Incomplete series & Real-world analogue \\
+\midrule
+S1 & MCAR points & $r \in \{0.1,0.3,0.5,0.7,0.9\}$ & half of non-ref. & packet loss \\
+S2 & contiguous blocks & $L \in \{1,6,24,72,168\}$\,h, 20\,\% & half of non-ref. & communication/logger outage \\
+S3 & whole days & 5, 10, 20\,\% of days & half of non-ref. & day not collected \\
+S4 & periodic logging & keep 1 of $P \in \{2,4,8\}$ & half of non-ref. & low-rate polling \\
+S5 & threshold (MNAR) & upper/lower 5, 20\,\% (daytime) & half of non-ref. & saturation, clipping, low-light cut-off \\
+S6 & one complete series & $r \in \{0.5,0.9\}$ & all but ref. & most neighbours degraded \\
+S7 & simultaneous blocks & $L \in \{6,24\}$\,h, 10\,\% & all incl.\ ref. & regional outage \\
+S8 & reference sweep & S6, $r{=}0.5$, every ref. & all but ref. & choice of reference \\
+\bottomrule
+\end{tabular}

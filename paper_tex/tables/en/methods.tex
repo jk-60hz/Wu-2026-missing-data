@@ -1,0 +1,12 @@
+\begin{tabular}{lp{0.74\linewidth}}
+\toprule
+Group & Methods \\
+\midrule
+Simple & Mean, Linear (interpolation), Diurnal ($\pm$7-day same-slot mean) \\
+PV practice & CSI-Linear (clear-sky-index interpolation), NbrRatio (best neighbour $\times$ $\pm$3-day energy ratio), NbrOLS (OLS on all complete series) \\
+Direct ML & kNN, GPR, SVR, RF, MLP --- current values of all complete series, no embedding \\
+Multivariate & MICE (IterativeImputer), KNNImputer \\
+FPRM family & FPRM (paper: GPR, single best reference), FPRM-E1 (no embedding), FPRM-multi$^\dagger$ (all complete references), FPRM-csi$^\dagger$ (clear-sky-index space) \\
+Ablation only & FPRM-SVR, FPRM-MLP (paper's SVM$^*$/NN$^*$), FPRM-back$^\dagger$ (causal embedding), FPRM-ref (designated reference), FPRM-E1-csi \\
+\bottomrule
+\end{tabular}

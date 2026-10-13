@@ -1,0 +1,8 @@
+run: smoke
+datasets: [stpete_1h]
+scenarios: [S6_oneref, S7_simul, S5_threshold]
+params: {S6_oneref: ["r=0.9"], S7_simul: ["L=24h"], S5_threshold: ["upper0.2"]}
+seeds: 1
+methods: [Mean, Linear, Diurnal, CSI-Linear, NbrRatio, NbrOLS, kNN, GPR, SVR, RF, MLP, MICE, KNNImputer,
+          FPRM, FPRM-ref, FPRM-E1, FPRM-SVR, FPRM-MLP, FPRM-multi, FPRM-back, FPRM-csi, FPRM-E1-csi]
+ref_sweep: {scenario: S6_oneref, params: ["r=0.5"], seeds: 1, methods: [FPRM-ref, FPRM-E1, NbrRatio]}
