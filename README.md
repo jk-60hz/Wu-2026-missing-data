@@ -6,6 +6,7 @@ Wu et al. (Nat. Commun. 2026)의 **FPRM (Full-Partial Reconstruction Mapping)** 
 - **작업 지시서**: [`PROMPT.md`](PROMPT.md)
 - **결과 리포트(결론 먼저)**: [`REPORT.md`](REPORT.md)
 - **데이터 설명**: [`data/README.md`](data/README.md)
+- **기술 보고서(arXiv 형식)**: 영문 [`paper_tex/en/main.pdf`](paper_tex/en/main.pdf), 국문 [`paper_tex/ko/main.pdf`](paper_tex/ko/main.pdf). 작성 지시서는 [`PAPER_PROMPT.md`](PAPER_PROMPT.md), 빌드는 `paper_tex/build.sh`
 
 ## 구조
 
@@ -19,6 +20,7 @@ src/solar.py, src/metrics.py, src/datasets.py, src/synthetic.py
 scripts/      다운로드, 전처리, 테스트셋 생성, 벤치마크, 합성계 재현, 리포트 그림
 configs/      main.yaml (본 실험), ablation.yaml (변형 + 참조 스윕)
 tests/        pytest (임베딩, 누설 방지, 마스크, 논문 ecology 재현)
+paper_tex/    LaTeX 기술 보고서 (en: pdfLaTeX, ko: XeLaTeX+kotex), 논문용 그림·표, arXiv 업로드 묶음
 results/      metrics CSV, 집계표, 그림
 ```
 
