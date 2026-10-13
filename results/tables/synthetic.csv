@@ -1,0 +1,11 @@
+,,,,rho,rho,nrmse,nrmse,E,E,tau,tau
+,,,,mean,std,mean,std,mean,std,mean,std
+system,method,var,r,,,,,,,,
+ecology,FPRM-GPR,y,0.9,1.0,,0.003,,3.0,,1.0,
+ecology,FPRM-GPR,z,0.9,0.995,,0.101,,4.0,,3.0,
+ecology,GPR(E=1),y,0.9,0.006,,1.047,,1.0,,1.0,
+ecology,GPR(E=1),z,0.9,0.643,,0.793,,1.0,,1.0,
+lorenz,FPRM-GPR,y,0.9,1.0,,0.003,,3.0,,1.0,
+lorenz,FPRM-GPR,z,0.9,0.983,,0.186,,5.0,,8.0,
+lorenz,GPR(E=1),y,0.9,0.892,,0.464,,1.0,,1.0,
+lorenz,GPR(E=1),z,0.9,0.658,,0.761,,1.0,,1.0,
