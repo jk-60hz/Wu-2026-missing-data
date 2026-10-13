@@ -1,0 +1,7 @@
+# Main benchmark: every scenario S1-S7 on every dataset, 5 seeds.
+run: main
+datasets: [stpete_1h, nola_1h, maui_1h, maui_15min]
+scenarios: [S1_mcar, S2_block, S3_day, S4_periodic, S5_threshold, S6_oneref, S7_simul]
+seeds: 5
+methods: [Mean, Linear, Diurnal, CSI-Linear, NbrRatio, NbrOLS, kNN, GPR, SVR, RF, MLP, MICE, KNNImputer,
+          FPRM, FPRM-E1, FPRM-multi, FPRM-csi]

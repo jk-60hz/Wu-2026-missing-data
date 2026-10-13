@@ -1,0 +1,10 @@
+# FPRM ablations (learner swap, causal embedding, designated reference, CSI without embedding)
+# and S8 reference sweep, on a subset of scenarios, 3 seeds.
+run: ablation
+datasets: [stpete_1h, nola_1h, maui_1h, maui_15min]
+scenarios: [S1_mcar, S2_block, S6_oneref]
+params: {S1_mcar: ["r=0.5", "r=0.9"], S2_block: ["L=6h", "L=24h"], S6_oneref: ["r=0.5", "r=0.9"]}
+seeds: 3
+methods: [FPRM, FPRM-E1, FPRM-ref, FPRM-SVR, FPRM-MLP, FPRM-back, FPRM-csi, FPRM-E1-csi]
+# S8: each column in turn is the only complete series (S6 mask, r=0.5)
+ref_sweep: {scenario: S6_oneref, params: ["r=0.5"], seeds: 2, methods: [FPRM-ref, FPRM-E1, NbrRatio, CSI-Linear]}

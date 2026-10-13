@@ -1,0 +1,9 @@
+data/raw/
+data/testsets/
+__pycache__/
+*.pyc
+.pytest_cache/
+results/cache/
+data/processed/*_all.parquet
+results/smoke/
+results/*/examples/
