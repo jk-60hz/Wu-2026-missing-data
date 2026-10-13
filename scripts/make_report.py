@@ -82,6 +82,27 @@ def synthetic():
     plt.close(fig)
 
 
+def compare(d, target):
+    """target vs best non-FPRM baseline and vs FPRM-E1: paired Wilcoxon over seed x var."""
+    rows = []
+    for (ds, sc, pa), g in d.groupby(["dataset", "scenario", "param"]):
+        base = g[g.method.isin(BASELINES)].groupby("method").rmse_cap.mean()
+        if base.empty or target not in set(g.method):
+            continue
+        best = base.idxmin()
+        f = g[g.method == target].set_index(["seed", "var"]).rmse_cap
+        b = g[g.method == best].set_index(["seed", "var"]).rmse_cap
+        e1 = g[g.method == "FPRM-E1"].set_index(["seed", "var"]).rmse_cap
+        j = pd.concat([f, b, e1], axis=1, keys=["f", "b", "e1"]).dropna()
+        p_best = wilcoxon(j.f, j.b).pvalue if (j.f != j.b).any() else 1.0
+        p_e1 = wilcoxon(j.f, j.e1).pvalue if (j.f != j.e1).any() else 1.0
+        rows.append(dict(dataset=ds, scenario=sc, param=pa, fprm=j.f.mean(), best_baseline=best,
+                         best=j.b.mean(), fprm_e1=j.e1.mean(), rel_vs_best=(j.f.mean() - j.b.mean()) / j.b.mean() * 100,
+                         p_vs_best=p_best, rel_vs_e1=(j.f.mean() - j.e1.mean()) / j.e1.mean() * 100,
+                         p_vs_e1=p_e1, n_pairs=len(j)))
+    return pd.DataFrame(rows)
+
+
 def main_tables(d):
     a = agg(d, ["dataset", "scenario", "param", "method"])
     a.to_csv(TAB / "main_by_param.csv", index=False)
@@ -93,29 +114,20 @@ def main_tables(d):
     # pivot: rows (scenario,param), columns method, value daytime rmse %cap, averaged over datasets
     pv = a.pivot_table(index=["scenario", "param"], columns="method", values="rmse_cap").round(2)
     pv.to_csv(TAB / "rmse_cap_pivot.csv")
-    # FPRM vs best non-FPRM baseline per (dataset, scenario, param): paired Wilcoxon over seed x var
-    rows = []
-    for (ds, sc, pa), g in d.groupby(["dataset", "scenario", "param"]):
-        base = g[g.method.isin(BASELINES)].groupby("method").rmse_cap.mean()
-        if base.empty or "FPRM" not in set(g.method):
-            continue
-        best = base.idxmin()
-        f = g[g.method == "FPRM"].set_index(["seed", "var"]).rmse_cap
-        b = g[g.method == best].set_index(["seed", "var"]).rmse_cap
-        e1 = g[g.method == "FPRM-E1"].set_index(["seed", "var"]).rmse_cap
-        j = pd.concat([f, b, e1], axis=1, keys=["f", "b", "e1"]).dropna()
-        try:
-            p_best = wilcoxon(j.f, j.b).pvalue if (j.f != j.b).any() else 1.0
-            p_e1 = wilcoxon(j.f, j.e1).pvalue if (j.f != j.e1).any() else 1.0
-        except ValueError:
-            p_best = p_e1 = np.nan
-        rows.append(dict(dataset=ds, scenario=sc, param=pa, fprm=j.f.mean(), best_baseline=best,
-                         best=j.b.mean(), fprm_e1=j.e1.mean(), rel_vs_best=(j.f.mean() - j.b.mean()) / j.b.mean() * 100,
-                         p_vs_best=p_best, rel_vs_e1=(j.f.mean() - j.e1.mean()) / j.e1.mean() * 100,
-                         p_vs_e1=p_e1, n_pairs=len(j)))
-    w = pd.DataFrame(rows)
+    w = compare(d, "FPRM")
+    wm = compare(d, "FPRM-multi")
+    wm.to_csv(TAB / "fprm_multi_vs_best_baseline.csv", index=False)
+    # scenario-family summary: how often FPRM / FPRM-multi beat the best baseline (significantly)
+    fam = []
+    for name, ww in (("FPRM", w), ("FPRM-multi", wm)):
+        for sc, g in ww.groupby("scenario"):
+            fam.append(dict(method=name, scenario=sc, cells=len(g), median_rel_vs_best=g.rel_vs_best.median(),
+                            wins=int((g.rel_vs_best < 0).sum()), sig_wins=int(((g.rel_vs_best < 0) & (g.p_vs_best < 0.05)).sum()),
+                            sig_losses=int(((g.rel_vs_best > 0) & (g.p_vs_best < 0.05)).sum()),
+                            median_rel_vs_e1=g.rel_vs_e1.median()))
+    pd.DataFrame(fam).round(2).to_csv(TAB / "family_summary.csv", index=False)
     w.to_csv(TAB / "fprm_vs_best_baseline.csv", index=False)
-    return a, w
+    return a, w, wm
 
 
 def curves(a, scenario, xlabel, fname, methods):
@@ -137,7 +149,7 @@ def curves(a, scenario, xlabel, fname, methods):
     plt.close(fig)
 
 
-def skill_heatmap(w):
+def skill_heatmap(w, name="FPRM", fname="fprm_vs_best_heatmap.png"):
     """Diverging heatmap: FPRM vs best baseline (% RMSE change; blue = FPRM better)."""
     rows = [(sc, p) for sc, ps in PARAM_ORDER.items() for p in ps]
     M = np.full((len(rows), len(DS)), np.nan)
@@ -164,11 +176,11 @@ def skill_heatmap(w):
     ax.set_yticks(range(len(rows)))
     ax.set_yticklabels([f"{sc.split('_')[0]} {p}" for sc, p in rows], fontsize=7.5)
     cb = fig.colorbar(im, ax=ax, shrink=0.5)
-    cb.set_label("FPRM RMSE vs best baseline (%)\n(negative = FPRM better)")
-    ax.set_title("FPRM vs best non-FPRM method per test set\n(* paired Wilcoxon p<0.05; label = best baseline)",
+    cb.set_label(f"{name} RMSE vs best baseline (%)\n(negative = {name} better)")
+    ax.set_title(f"{name} vs best non-FPRM method per test set\n(* paired Wilcoxon p<0.05; label = best baseline)",
                  fontsize=9, color=INK)
     fig.tight_layout()
-    fig.savefig(FIG / "fprm_vs_best_heatmap.png", dpi=150)
+    fig.savefig(FIG / fname, dpi=150)
     plt.close(fig)
 
 
@@ -236,12 +248,13 @@ if __name__ == "__main__":
     p = RES / "main" / "metrics.csv"
     if p.exists():
         d = pd.read_csv(p)
-        a, w = main_tables(d)
+        a, w, wm = main_tables(d)
         cm = ["FPRM", "FPRM-E1", "FPRM-csi", "NbrRatio", "NbrOLS", "CSI-Linear"]
         curves(a, "S1_mcar", "missing ratio r", "s1_mcar_curves.png", cm)
         curves(a, "S2_block", "gap length (hours)", "s2_block_curves.png", cm)
         curves(a, "S6_oneref", "missing ratio r (only 1 complete series)", "s6_oneref_curves.png", cm)
         skill_heatmap(w)
+        skill_heatmap(wm, "FPRM-multi", "fprm_multi_vs_best_heatmap.png")
         for ds in DS:
             example_plot(ds, "S2_block__L=24h", ["FPRM", "FPRM-csi", "NbrRatio", "CSI-Linear"],
                          f"example_{ds}_S2_24h.png", f"{DS_LABEL[ds]} — S2 24-h gaps, seed 0")
