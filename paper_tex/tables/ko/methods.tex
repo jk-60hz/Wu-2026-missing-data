@@ -1,0 +1,12 @@
+\begin{tabular}{lp{0.74\linewidth}}
+\toprule
+그룹 & 기법 \\
+\midrule
+단순 & Mean, Linear(선형 보간), Diurnal($\pm$7일 같은 시각 평균) \\
+태양광 실무 & CSI-Linear(clear-sky index 보간), NbrRatio(최고 상관 이웃 $\times$ $\pm$3일 에너지 비율), NbrOLS(완전 시계열 전체에 대한 OLS) \\
+직접 ML 회귀 & kNN, GPR, SVR, RF, MLP --- 완전 시계열 전체의 현재값 입력, 임베딩 없음 \\
+다변량 대치 & MICE(IterativeImputer), KNNImputer \\
+FPRM 계열 & FPRM(논문: GPR, 최적 참조 1개), FPRM-E1(임베딩 제거), FPRM-multi$^\dagger$(완전 참조 전체), FPRM-csi$^\dagger$(clear-sky index 공간) \\
+Ablation 전용 & FPRM-SVR, FPRM-MLP(논문의 SVM$^*$/NN$^*$), FPRM-back$^\dagger$(과거 방향 임베딩), FPRM-ref(지정 참조), FPRM-E1-csi \\
+\bottomrule
+\end{tabular}

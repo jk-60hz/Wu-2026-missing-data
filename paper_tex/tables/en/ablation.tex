@@ -1,0 +1,14 @@
+\begin{tabular}{llrr}
+\toprule
+Variant & Description & RMSE (\%cap) & Time (s) \\
+\midrule
+FPRM & GPR, forward, best single reference & 8.67 & 6.92 \\
+FPRM-SVR & SVR mapping (paper's SVM$^*$) & 8.73 & \textbf{0.15} \\
+FPRM-MLP & MLP mapping (paper's NN$^*$) & 8.76 & 2.01 \\
+FPRM-back & backward (causal) embedding$^\dagger$ & \textbf{8.60} & 6.68 \\
+FPRM-csi & clear-sky-index space$^\dagger$ & 8.92 & 6.30 \\
+FPRM-E1 & no embedding ($E{=}1$) & 9.26 & 1.91 \\
+FPRM-E1-csi & no embedding, clear-sky-index space & 9.67 & 1.79 \\
+FPRM-ref & designated reference (Maui: GHI) & 12.31 & 6.79 \\
+\bottomrule
+\end{tabular}

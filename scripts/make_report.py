@@ -1,6 +1,7 @@
 """Aggregate benchmark CSVs into tables and figures used by REPORT.md.
 
-    python scripts/make_report.py
+    python scripts/make_report.py           # PNG figures -> results/figures
+    python scripts/make_report.py --paper   # vector PDF figures without in-figure titles -> paper_tex/figures
 """
 import sys
 from pathlib import Path
@@ -15,7 +16,9 @@ from scipy.stats import wilcoxon  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-RES, FIG, TAB = ROOT / "results", ROOT / "results" / "figures", ROOT / "results" / "tables"
+PAPER = "--paper" in sys.argv
+RES, TAB = ROOT / "results", ROOT / "results" / "tables"
+FIG = ROOT / "paper_tex" / "figures" if PAPER else RES / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
 TAB.mkdir(parents=True, exist_ok=True)
 
@@ -27,6 +30,22 @@ plt.rcParams.update({"font.size": 9, "axes.edgecolor": INK2, "axes.labelcolor": 
                      "axes.spines.top": False, "axes.spines.right": False, "legend.frameon": False,
                      "lines.linewidth": 2, "lines.markersize": 5, "figure.facecolor": "#fcfcfb",
                      "axes.facecolor": "#fcfcfb", "savefig.facecolor": "#fcfcfb"})
+if PAPER:  # print: white background, embedded TrueType fonts
+    plt.rcParams.update({"figure.facecolor": "white", "axes.facecolor": "white", "savefig.facecolor": "white",
+                         "pdf.fonttype": 42, "font.size": 8})
+
+
+def save(fig, fname):
+    """Save PNG (report) or PDF (paper) under the same stem."""
+    out = FIG / (Path(fname).stem + (".pdf" if PAPER else ".png"))
+    fig.savefig(out, dpi=150, bbox_inches="tight" if PAPER else None)
+    plt.close(fig)
+
+
+def title(obj, text, **kw):
+    """In-figure titles are dropped in paper mode (the LaTeX caption carries them)."""
+    if not PAPER:
+        obj(text, **kw)
 
 DS = ["stpete_1h", "nola_1h", "maui_1h", "maui_15min"]
 DS_LABEL = {"stpete_1h": "St. Pete (4 sites, 1h)", "nola_1h": "New Orleans (10 houses, 1h)",
@@ -78,8 +97,7 @@ def synthetic():
     ax[1, 0].set_ylabel("normalised RMSE")
     fig.legend(loc="lower center", ncol=4, fontsize=8, bbox_to_anchor=(0.5, -0.02))
     fig.tight_layout(rect=(0, 0.08, 1, 1))
-    fig.savefig(FIG / "synthetic_reproduction.png", dpi=150)
-    plt.close(fig)
+    save(fig, "synthetic_reproduction.png")
 
 
 def compare(d, target):
@@ -145,8 +163,7 @@ def curves(a, scenario, xlabel, fname, methods):
     ax[0].set_ylabel("daytime RMSE (% of capacity)")
     fig.legend(loc="lower center", ncol=len(methods), fontsize=8, bbox_to_anchor=(0.5, -0.02))
     fig.tight_layout(rect=(0, 0.1, 1, 1))
-    fig.savefig(FIG / fname, dpi=150)
-    plt.close(fig)
+    save(fig, fname)
 
 
 def skill_heatmap(w, name="FPRM", fname="fprm_vs_best_heatmap.png"):
@@ -161,7 +178,7 @@ def skill_heatmap(w, name="FPRM", fname="fprm_vs_best_heatmap.png"):
     from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm
     cmap = LinearSegmentedColormap.from_list("div", ["#2a78d6", "#f0efec", "#eb6834"])
     lim = np.nanmax(np.abs(np.clip(M, -60, 60))) if np.isfinite(M).any() else 1
-    fig, ax = plt.subplots(figsize=(6.4, 9))
+    fig, ax = plt.subplots(figsize=(4.2, 9.0) if PAPER else (6.4, 9))
     im = ax.imshow(np.clip(M, -lim, lim), cmap=cmap, norm=TwoSlopeNorm(0, -lim, lim), aspect="auto")
     ax.grid(False)
     for i in range(M.shape[0]):
@@ -170,21 +187,21 @@ def skill_heatmap(w, name="FPRM", fname="fprm_vs_best_heatmap.png"):
                 q = w[(w.dataset == DS[k]) & (w.scenario == rows[i][0]) & (w.param == rows[i][1])]
                 sig = "*" if q.p_vs_best.iloc[0] < 0.05 else ""
                 ax.text(k, i, f"{M[i, k]:+.0f}%{sig}\n{q.best_baseline.iloc[0]}", ha="center", va="center",
-                        fontsize=6.5, color=INK)
+                        fontsize=7.5 if PAPER else 6.5, color=INK)
     ax.set_xticks(range(len(DS)))
-    ax.set_xticklabels([DS_LABEL[d].replace(" (", "\n(") for d in DS], fontsize=7.5)
+    short = {"stpete_1h": "St. Pete\n1h", "nola_1h": "N. Orleans\n1h", "maui_1h": "Maui\n1h", "maui_15min": "Maui\n15min"}
+    ax.set_xticklabels([short[d] if PAPER else DS_LABEL[d].replace(" (", "\n(") for d in DS], fontsize=7.5)
     ax.set_yticks(range(len(rows)))
     ax.set_yticklabels([f"{sc.split('_')[0]} {p}" for sc, p in rows], fontsize=7.5)
     cb = fig.colorbar(im, ax=ax, shrink=0.5)
     cb.set_label(f"{name} RMSE vs best baseline (%)\n(negative = {name} better)")
-    ax.set_title(f"{name} vs best non-FPRM method per test set\n(* paired Wilcoxon p<0.05; label = best baseline)",
-                 fontsize=9, color=INK)
+    title(ax.set_title, f"{name} vs best non-FPRM method per test set\n(* paired Wilcoxon p<0.05; label = best baseline)",
+          fontsize=9, color=INK)
     fig.tight_layout()
-    fig.savefig(FIG / fname, dpi=150)
-    plt.close(fig)
+    save(fig, fname)
 
 
-def example_plot(ds, tag, methods, fname, title):
+def example_plot(ds, tag, methods, fname, ttl):
     p = RES / "main" / "examples" / f"{ds}__{tag}.npz"
     if not p.exists():
         return
@@ -221,10 +238,9 @@ def example_plot(ds, tag, methods, fname, title):
     ax[0].set_ylabel(f"{ctx['columns'][int(z['targets'][k])]} AC output")
     h, lab = ax[0].get_legend_handles_labels()
     fig.legend(h, lab, loc="lower center", ncol=len(lab), fontsize=8, bbox_to_anchor=(0.5, -0.02))
-    fig.suptitle(title, fontsize=10, color=INK)
+    title(fig.suptitle, ttl, fontsize=10, color=INK)
     fig.tight_layout(rect=(0, 0.08, 1, 1))
-    fig.savefig(FIG / fname, dpi=150)
-    plt.close(fig)
+    save(fig, fname)
 
 
 def ablation():

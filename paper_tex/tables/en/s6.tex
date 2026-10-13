@@ -1,0 +1,17 @@
+\begin{tabular}{llrrrrrrl}
+\toprule
+Dataset & $r$ & FPRM & FPRM-E1 & NbrRatio & RF & GPR & MICE & Best baseline \\
+\midrule
+\texttt{stpete\_1h} & $r{=}0.5$ & 8.14 & 8.51 & \textbf{7.67} & 9.14 & 8.51 & 7.94 & NbrRatio (7.67) \\
+ & $r{=}0.9$ & \textbf{8.03} & 8.60 & 9.74 & 9.10 & 8.60 & 9.58 & GPR (8.60) \\
+\midrule
+\texttt{nola\_1h} & $r{=}0.5$ & \textbf{7.04} & 8.70 & 8.93 & 9.48 & 8.70 & 7.86 & MICE (7.86) \\
+ & $r{=}0.9$ & \textbf{7.65} & 8.85 & 10.34 & 9.54 & 8.85 & 18.23 & GPR (8.85) \\
+\midrule
+\texttt{maui\_1h} & $r{=}0.5$ & 15.72 & 16.85 & 16.37 & 18.29 & 16.85 & \textbf{7.00} & MICE (7.00) \\
+ & $r{=}0.9$ & \textbf{16.19} & 17.00 & 17.86 & 18.28 & 17.00 & 24.21 & GPR (17.00) \\
+\midrule
+\texttt{maui\_15min} & $r{=}0.5$ & 17.38 & 18.69 & 19.19 & 20.22 & 18.69 & \textbf{10.03} & MICE (10.03) \\
+ & $r{=}0.9$ & \textbf{17.74} & 18.82 & 19.63 & 20.45 & 18.82 & 25.22 & GPR (18.82) \\
+\bottomrule
+\end{tabular}
